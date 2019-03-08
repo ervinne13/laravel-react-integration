@@ -494,3 +494,5 @@ File: ``resources/views/welcome.blade.php``
 ```
 
 Now try testing your application and increment should now work.
+
+# Managing Server Side Data
