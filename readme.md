@@ -496,3 +496,5 @@ File: ``resources/views/welcome.blade.php``
 Now try testing your application and increment should now work.
 
 # Managing Server Side Data
+
+This portion will have too many code to put to a documentation so we'll be referencing the source code directly. Make sure you're either in the `master` branch or in the `feature-ssr-spa-hybrid` branch.
