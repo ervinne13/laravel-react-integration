@@ -1,6 +1,5 @@
 {
+    "/js/hydrate.js": "/js/hydrate.js",
     "/js/index-spa.js": "/js/index-spa.js",
-    "/js/index-spa.0dd9454c6e1cdd8139dd.hot-update.js": "/js/index-spa.0dd9454c6e1cdd8139dd.hot-update.js",
-    "/js/index-spa.7d5885916fc590a5c2fa.hot-update.js": "/js/index-spa.7d5885916fc590a5c2fa.hot-update.js",
-    "/js/index-spa.ba9a6604b16f43c99c6e.hot-update.js": "/js/index-spa.ba9a6604b16f43c99c6e.hot-update.js"
+    "/js/index-ssr.js": "/js/index-ssr.js"
 }

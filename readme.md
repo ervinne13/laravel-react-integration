@@ -17,6 +17,8 @@ Clean up Laravel generated assets as well by deleting the following:
 ``public/css/*``
 ``public/js/app.js``
 
+We will follow a convention which will require us to rename `bootstrap.js` to `bootstrap-spa.js` so rename the file now.
+
 Create a new file ``resources/react-app/components/RootComponent.js`` with the following contents:
 
 File: ``resources/react-app/components/RootComponent.js``
@@ -41,7 +43,7 @@ Create a new file ``resources/react-app/index-spa.js`` with the following conten
 File: ``resources/react-app/index-spa.js``
 
 ```js
-require('./bootstrap');
+require('./bootstrap-spa');
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -71,14 +73,15 @@ const mix = require("laravel-mix");
  | variables.
  |
  */
-const HOT_PORT = parseInt(process.env.MIX_HOT_PORT || 8080);
+const WEBPACK_DEV_SERVER_PORT = parseInt(process.env.WEBPACK_DEV_SERVER_PORT || 8080);
 const env = {
-    publicPath: `${process.env.APP_URL}:${HOT_PORT}/`,
-    hotPort: HOT_PORT,
-    isHttps: (process.env.MIX_IS_HTTPS == true)
+    publicPath: `${process.env.APP_URL}:${WEBPACK_DEV_SERVER_PORT}/`,
+    isHttps: (process.env.WEBPACK_IS_HTTPS == true),
+    webpackDevServerPort: WEBPACK_DEV_SERVER_PORT,    
+    webpackDevServerHost: process.env.WEBPACK_DEV_SERVER_HOST
 };
 
-Config.hmrOptions.port = HOT_PORT;
+Config.hmrOptions.port = env.webpackDevServerPort;
 
 /*
  |--------------------------------------------------------------------------
@@ -107,7 +110,8 @@ mix.webpackConfig({
         disableHostCheck: true,
         contentBase: path.join(__dirname, "public"),
         https: env.isHttps,
-        port: env.hotPort,
+        port: env.webpackDevServerPort,
+        host: env.webpackDevServerHost,
         headers: { "Access-Control-Allow-Origin": "*" },
         watchOptions: {
             exclude: [/bower_components/, /node_modules/]
@@ -160,14 +164,21 @@ If you're running the application locally and don't have https yet, add the foll
 
 File ``.env``
 ```env
-MIX_IS_HTTPS=false
+WEBPACK_IS_HTTPS=false
 ```
 
 Webpack dev server's default port is 8080 (more on this later), if you want to change this, add the following in your .env file:
 
 File ``.env``
 ```env
-MIX_HOT_PORT=<your port here>
+WEBPACK_DEV_SERVER_PORT=<your port here>
+```
+
+Add the webpack dev server's host (defaults to localhost). This is important to be set if you're running this inside a docker container.
+
+File ``.env``
+```env
+WEBPACK_DEV_SERVER_HOST=<ip>
 ```
 
 _Make sure this port is exposed if you're running this in a docker container._
@@ -177,7 +188,7 @@ _Make sure this port is exposed if you're running this in a docker container._
 Run the command:
 
 ```bash
-npm run prod
+npm run dev
 ```
 
 This will transpile a production version of our scripts and put the files to ``public/js`` as we configured at the end of ``webpack.mix.js`` file.
@@ -261,7 +272,7 @@ To resolve this, add ``module.hot.accept()`` if the application is hot reloading
 
 File ``resources/react-app/index-spa.js``
 ```js
-require('./bootstrap');
+require('./bootstrap-spa');
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -277,3 +288,209 @@ if (document.getElementById('root')) {
 ```
 
 After updating, run ``npm run hot`` again. Refresh your browser and your next updates should now happen without react manually refreshing the browser and instead just refresh the components that did change.
+
+# Setting up Server Side Rendering
+
+First of, we'll need spatie's ssr package to enable running node applications on the background from php for us.
+
+Install the dependency using:
+```bash
+composer require spatie/laravel-server-side-rendering
+php artisan vendor:publish --provider="Spatie\Ssr\SsrServiceProvider" --tag="config"
+```
+
+## Prerequisites (Taken from Spatie's Docs)
+First you'll need to pick an engine to execute your scripts. The server-side-rendering library ships with V8 and Node engines. By default, the package is configured to use node, since you probably already have that installed on your system.
+
+Set up the NODE_PATH environment variable in your .env file to get started:
+
+Inside your .env:
+```
+NODE_PATH=/path/to/my/node
+```
+
+You'll also need to ensure that a storage/app/ssr folder exists, or change the ssr.node.temp_path config value to something else.
+
+## Configuring React to Run by SSR + SPA
+
+Create a new file called ``index-ssr.js``. As the name implies, this is the ssr version of our ``index-spa.js``, hence, why we had this naming convention earlier.
+
+File: ``index-ssr.js``
+```js
+import React from 'react';
+import ReactDOMServer from 'react-dom/server';
+import RootComponent from './components/RootComponent';
+
+//  We're telling spatie's ssr to take whatever markup we pass in here
+//  will be served when we call the ssr(/*...*/)->render() in PHP
+dispatch(ReactDOMServer.renderToString(<RootComponent />));
+```
+
+_IMPORTANT! Notice that we don't load the `bootstrap-spa.js` file, this is because `window` does not exist in node. This will also mean that whatever we attach to axios in the bootstrap will not take effect in SSR. If you need to do some tasks similar to what `bootstrap-spa.js` do in SSR, create a separate file for it called `bootstrap-ssr.js` to follow our convention._
+
+_In our case, we deliberately did not include axios for dynamic loading of contents from Laravel later. By default, SSR will execute all commands (INCLUDING AJAX calls) in the server which we find very resource exhaustive when we can just make use of `spatie`'s `context` which we will demonstrate later._
+
+And update our view to render the markup from the server with:
+``{!! ssr('js/index-ssr.js')->render() !!}``
+
+File: ``resources/views/welcome.blade.php``
+```html
+<!doctype html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title>My Application</title>
+
+        <meta name="csrf-token" content="{{ csrf_token() }}">
+    </head>
+    <body>
+        <div id="root">
+            {!! ssr('js/index-ssr.js')->render() !!}
+        </div>
+        <!-- <script src="{{ mix('js/index-spa.js') }}"></script> -->
+    </body>
+</html>
+```
+
+Add this file to Laravel's mix (``webpack.mix.js``):
+
+```js
+mix
+    .react("resources/react-app/index-spa.js", "public/js")
+    .react("resources/react-app/index-ssr.js", "public/js") // added
+```
+
+_Note: we commented out the spa for us to test that react really renders_
+
+Transpile the files for SSR:
+
+```bash
+npm run dev
+```
+
+Make sure that SSR is enabled (it's enabled by default only in production).
+
+File: ``config/ssr.php``
+```php
+/*
+ * Enable or disable the server renderer. Enabled in production by default.
+ */
+// 'enabled' => env('APP_ENV') === 'production',
+'enabled' => true,
+```
+
+This will result in the markup being rendered, but we have a new problem. React's events does not work anymore, for this, we'll need to ``hydrate`` React.
+
+## Adding React Events for Testing Hydration
+
+To simulate events inside React, let's add a new component that makes use of React events and state management.
+
+New FIle: ``resources/components/ClickDemo.js``
+```jsx
+import React, { Component } from 'react';
+
+class ClickDemo extends Component {
+    constructor(props) {
+        super(props);
+        this.state = { clicks: 0};
+    }
+
+    onClick() {
+        let clicks = this.state.clicks + 1;
+        this.setState({ clicks });
+    }
+
+    render() {
+        return (
+            <div>
+                <button onClick={this.onClick.bind(this)}>Click to Increment Count</button>
+                Number of clicks so far: {this.state.clicks}
+            </div>
+        );
+    }
+}
+
+export default ClickDemo
+```
+
+Then include the ``ClickDemo`` component in our ``RootComponent`` like so:
+
+File: ``resources/components/RootComponent.js``
+```jsx
+import React, { Component } from 'react';
+import ClickDemo from './ClickDemo';
+
+class RootComponent extends Component {
+    render() {
+        return (
+            <div>
+                I'm the root component! Have the Front-end team replace me with their own.
+                <ClickDemo />
+            </div>
+        );
+    }
+}
+
+export default RootComponent
+```
+
+Rebuild the app by ``npm run watch``, ``npm run dev`` or ``npm run prod`` and try it out on the browser, you should notice that clicking the button won't have any effect.
+
+## Hydrating React
+
+To "re attach" events to React components that are already rendered, we `hydrate` it.
+
+Create a new file `resources/react-app/hydrate.js`.
+
+File `resources/react-app/hydrate.js`:
+```js
+require('./bootstrap-spa');
+
+import React from 'react';
+import ReactDOM from 'react-dom';
+import RootComponent from './components/RootComponent';
+
+if (document.getElementById('root')) {
+    ReactDOM.hydrate(<RootComponent />, document.getElementById('root'));
+}
+```
+
+Then add this to our `webpack.mix.js` config:
+
+File `/webpack.mix.js`
+```js
+//  ...
+
+mix
+    .react("resources/react-app/index-spa.js", "public/js")
+    .react("resources/react-app/index-ssr.js", "public/js")
+    .react("resources/react-app/hydrate.js", "public/js")   //  added
+```
+
+Finally, import the hydrate script in place of `index-ssr.js`.
+
+IMPORTANT! Also remove whitespace inside the root element, React has a bug in dev mode that recognizes this whitespace as an error, see below:
+
+File: ``resources/views/welcome.blade.php``
+```html
+<!doctype html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title>My Application</title>
+
+        <meta name="csrf-token" content="{{ csrf_token() }}">
+    </head>
+    <body>
+        <!-- Notice removed whitespaces/new lines inside root -->
+        <div id="root">{!! ssr('js/index-ssr.js')->render() !!}</div>
+        <script src="{{ mix('js/hydrate.js') }}"></script>
+    </body>
+</html>
+```
+
+Now try testing your application and increment should now work.

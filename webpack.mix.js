@@ -9,14 +9,15 @@ const mix = require("laravel-mix");
  | variables.
  |
  */
-const HOT_PORT = parseInt(process.env.MIX_HOT_PORT || 8080);
+const WEBPACK_DEV_SERVER_PORT = parseInt(process.env.WEBPACK_DEV_SERVER_PORT || 8080);
 const env = {
-    publicPath: `${process.env.APP_URL}:${HOT_PORT}/`,
-    hotPort: HOT_PORT,
-    isHttps: (process.env.MIX_IS_HTTPS == true)
+    publicPath: `${process.env.APP_URL}:${WEBPACK_DEV_SERVER_PORT}/`,
+    isHttps: (process.env.WEBPACK_IS_HTTPS == true),
+    webpackDevServerPort: WEBPACK_DEV_SERVER_PORT,    
+    webpackDevServerHost: process.env.WEBPACK_DEV_SERVER_HOST
 };
 
-Config.hmrOptions.port = HOT_PORT;
+Config.hmrOptions.port = env.webpackDevServerPort;
 
 /*
  |--------------------------------------------------------------------------
@@ -45,7 +46,8 @@ mix.webpackConfig({
         disableHostCheck: true,
         contentBase: path.join(__dirname, "public"),
         https: env.isHttps,
-        port: env.hotPort,
+        port: env.webpackDevServerPort,
+        host: env.webpackDevServerHost,
         headers: { "Access-Control-Allow-Origin": "*" },
         watchOptions: {
             exclude: [/bower_components/, /node_modules/]
@@ -91,4 +93,7 @@ Mix.listen("configReady", webpackConfig => {
  |
  */
 
-mix.react("resources/react-app/index-spa.js", "public/js");
+mix
+    .react("resources/react-app/index-spa.js", "public/js")
+    .react("resources/react-app/index-ssr.js", "public/js")
+    .react("resources/react-app/hydrate.js", "public/js")

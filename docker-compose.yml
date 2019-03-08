@@ -1,0 +1,21 @@
+version: "3.2"
+
+services:
+  app:
+    image: ervinne/laravel-react-integration:7.2
+    build:
+      context: ./docker-config
+    container_name: laravel-react-integration-13.12
+    user: root
+    volumes:
+      # host:container
+      - ${LOCAL_PATH}:/var/www/vhost/app/backend/rnd/laravel-react-integration
+    networks:
+       default:
+          ipv4_address: 192.168.13.12
+    tty: true
+    stdin_open: true
+networks:
+  default:
+    external:
+      name: docker-bridge-local

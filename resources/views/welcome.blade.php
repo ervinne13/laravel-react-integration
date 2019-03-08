@@ -9,7 +9,7 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
     </head>
     <body>
-        <div id="root"></div>
-        <script src="{{ mix('js/index-spa.js') }}"></script>
+        <div id="root">{!! ssr('js/index-ssr.js')->render() !!}</div>
+        <script src="{{ mix('js/hydrate.js') }}"></script>
     </body>
 </html>

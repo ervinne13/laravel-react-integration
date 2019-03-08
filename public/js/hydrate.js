@@ -81,7 +81,7 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ 	return __webpack_require__(__webpack_require__.s = 2);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -61242,10 +61242,10 @@ function (_Component) {
 
 /***/ }),
 
-/***/ "./resources/react-app/index-spa.js":
-/*!******************************************!*\
-  !*** ./resources/react-app/index-spa.js ***!
-  \******************************************/
+/***/ "./resources/react-app/hydrate.js":
+/*!****************************************!*\
+  !*** ./resources/react-app/hydrate.js ***!
+  \****************************************/
 /*! no exports provided */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -61265,19 +61265,19 @@ __webpack_require__(/*! ./bootstrap-spa */ "./resources/react-app/bootstrap-spa.
 if (false) {}
 
 if (document.getElementById('root')) {
-  react_dom__WEBPACK_IMPORTED_MODULE_1___default.a.render(react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_components_RootComponent__WEBPACK_IMPORTED_MODULE_2__["default"], null), document.getElementById('root'));
+  react_dom__WEBPACK_IMPORTED_MODULE_1___default.a.hydrate(react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_components_RootComponent__WEBPACK_IMPORTED_MODULE_2__["default"], null), document.getElementById('root'));
 }
 
 /***/ }),
 
-/***/ 0:
-/*!************************************************!*\
-  !*** multi ./resources/react-app/index-spa.js ***!
-  \************************************************/
+/***/ 2:
+/*!**********************************************!*\
+  !*** multi ./resources/react-app/hydrate.js ***!
+  \**********************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! /var/www/vhost/app/backend/rnd/laravel-react-integration/resources/react-app/index-spa.js */"./resources/react-app/index-spa.js");
+module.exports = __webpack_require__(/*! /var/www/vhost/app/backend/rnd/laravel-react-integration/resources/react-app/hydrate.js */"./resources/react-app/hydrate.js");
 
 
 /***/ })
