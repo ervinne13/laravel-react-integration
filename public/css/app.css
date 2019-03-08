@@ -10655,8 +10655,38 @@ a.text-dark:focus {
   }
 }
 
+body {
+  font-family: Cereal, Helvetica Neue, Helvetica, Arial, sans-serif;
+}
+
 .navbar-laravel {
   background-color: #fff;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+article.list-post {
+  flex: 0 0 33.333%;
+}
+
+article.list-post a:hover {
+  color: #2b2b2b;
+}
+
+article.list-post .title {
+  display: inline;
+  font-weight: 700;
+  color: #2b2b2b;
+}
+
+article.list-post .sub-title {
+  margin-left: 10px;
+  display: inline;
+  font-weight: 300;
+  color: #767676;
+}
+
+article.list-post .short-description {
+  margin-top: 12px;
+  color: #4a4a4a;
 }
 

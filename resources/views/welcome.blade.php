@@ -7,6 +7,8 @@
         <title>My Application</title>
 
         <meta name="csrf-token" content="{{ csrf_token() }}">
+
+        <link rel="stylesheet" type="text/css" href="{{ mix('css/app.css') }}" />
     </head>
     <body>
         <div id="root">{!! ssr('js/index-ssr.js')->render() !!}</div>

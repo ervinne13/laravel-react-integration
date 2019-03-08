@@ -2,8 +2,8 @@ require('./bootstrap-spa');
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import RootComponent from './components/RootComponent';
+import Root from 'Scenes/Root';
 
 if (document.getElementById('root')) {
-    ReactDOM.hydrate(<RootComponent />, document.getElementById('root'));
+    ReactDOM.hydrate(<Root />, document.getElementById('root'));
 }

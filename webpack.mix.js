@@ -84,6 +84,26 @@ Mix.listen("configReady", webpackConfig => {
 
 /*
  |--------------------------------------------------------------------------
+ | Mix Alias
+ |--------------------------------------------------------------------------
+ |
+ | TODO Description
+ |
+ */
+
+mix.webpackConfig({
+    resolve: {
+      extensions: ['.js', '.jsx'],
+      alias: {
+        'Components': __dirname + '/resources/react-app/src/components',
+        'Scenes': __dirname + '/resources/react-app/src/scenes',
+        'Public': __dirname + '/resources/react-app/public',
+      },
+    },
+  })
+
+/*
+ |--------------------------------------------------------------------------
  | Mix Asset Management
  |--------------------------------------------------------------------------
  |
@@ -94,6 +114,7 @@ Mix.listen("configReady", webpackConfig => {
  */
 
 mix
+    .sass("resources/sass/app.scss", "public/css")
     .react("resources/react-app/index-spa.js", "public/js")
     .react("resources/react-app/index-ssr.js", "public/js")
     .react("resources/react-app/hydrate.js", "public/js")

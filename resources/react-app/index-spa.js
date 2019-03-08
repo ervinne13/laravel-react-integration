@@ -2,12 +2,12 @@ require('./bootstrap-spa');
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import RootComponent from './components/RootComponent';
+import Root from 'Scenes/Root';
 
 if (module.hot) {
     module.hot.accept();
 }
 
 if (document.getElementById('root')) {
-    ReactDOM.render(<RootComponent />, document.getElementById('root'));
+    ReactDOM.render(<Root />, document.getElementById('root'));
 }

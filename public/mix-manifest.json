@@ -1,5 +1,6 @@
 {
     "/js/hydrate.js": "/js/hydrate.js",
     "/js/index-spa.js": "/js/index-spa.js",
+    "/css/app.css": "/css/app.css",
     "/js/index-ssr.js": "/js/index-ssr.js"
 }
